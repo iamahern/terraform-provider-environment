@@ -18,9 +18,27 @@
 PKG_NAME=environment
 CURDIR=$$(pwd)
 
+PLATFORMS ?= darwin/amd64 linux/amd64 windows/amd64
+VERSION=0.10
+
+temp = $(subst /, ,$@)
+os = $(word 1, $(temp))
+arch = $(word 2, $(temp))
+
+BASE := terraform-provider-environment_$(VERSION)
+RELEASE_DIR := ./release
+
 default: build
 
 build: vet test
+	go build -o ./build/$(BASE)
+
+release: vet test $(PLATFORMS)
+
+$(PLATFORMS):
+	GOOS=$(os) GOARCH=$(arch) go build -o '$(RELEASE_DIR)/$(BASE)-$(os)-$(arch)'
+
+install: build
 	go install
 
 test: fmtcheck
